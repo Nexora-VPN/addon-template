@@ -1,0 +1,55 @@
+# On a v* tag: the binaries the script install downloads, their checksums, the
+# release, and the image the docker install pulls. The manifest's version must
+# be the tag's (checked first), and an official addon's manifest is signed
+# before the tag is pushed — the signature covers the version.
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: the manifest names this release
+        id: version
+        run: |
+          want="${GITHUB_REF_NAME#v}"
+          have="$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' nexora-addon.json | head -n 1)"
+          [ "$want" = "$have" ] || { echo "nexora-addon.json says $have, the tag is $want"; exit 1; }
+          go run github.com/nexora-vpn/addon-kit/cmd/nexora-addon check nexora-addon.json
+          echo "version=$want" >> "$GITHUB_OUTPUT"
+      - name: binaries
+        run: |
+          mkdir dist
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build -trimpath -ldflags "-s -w" -o addon-template .
+            tar -czf "dist/addon-template-linux-${arch}.tar.gz" addon-template
+          done
+          cp nexora-addon.json install.sh dist/
+          (cd dist && sha256sum * > SHA256SUMS)
+      - name: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/nexora-vpn/addon-template:${{ steps.version.outputs.version }}
+            ghcr.io/nexora-vpn/addon-template:latest

@@ -1,0 +1,13 @@
+# The addon's compose stack. The install writes .env beside this file with
+# the answers to the manifest's options (NEXORA_OPT_*), the panel's address
+# and the claim code; `docker compose up -d` starts it.
+services:
+  addon-template:
+    image: ghcr.io/nexora-vpn/addon-template:${NEXORA_ADDON_VERSION:-latest}
+    container_name: addon-template
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${NEXORA_OPT_PORT:-8090}:${NEXORA_OPT_PORT:-8090}"
+    volumes:
+      - ./data:/data

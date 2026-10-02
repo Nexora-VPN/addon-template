@@ -1,0 +1,4 @@
+/data/
+/addon-template
+*.key
+.env

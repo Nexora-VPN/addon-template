@@ -1,0 +1,36 @@
+{
+  "api": 1,
+  "slug": "template",
+  "name": "Addon template",
+  "version": "0.1.0",
+  "publisher": "Nexora",
+  "license": "Apache-2.0",
+  "description": {
+    "en": "A minimal Nexora addon to start from: registration, events, health and an install with options.",
+    "fa": "یک افزونهٔ کوچک برای شروع: ثبت، رویدادها، سلامت و نصب با گزینه."
+  },
+  "docs": "https://github.com/Nexora-VPN/addon-template",
+  "install": {
+    "docker": { "image": "ghcr.io/nexora-vpn/addon-template", "compose": "deploy/compose.yml" },
+    "binary": {
+      "linux-amd64": "addon-template-linux-amd64.tar.gz",
+      "linux-arm64": "addon-template-linux-arm64.tar.gz"
+    },
+    "options": [
+      { "key": "port", "type": "port", "default": 8090,
+        "label": { "en": "Port", "fa": "پورت" } },
+      { "key": "title", "type": "string", "default": "Hello from a Nexora addon",
+        "label": { "en": "Page title", "fa": "عنوان صفحه" } },
+      { "key": "count_users", "type": "bool", "default": true,
+        "label": { "en": "Show the panel's account count", "fa": "نمایش تعداد حساب‌های پنل" } }
+    ]
+  },
+  "scopes": [
+    { "scope": "users:read", "purpose": "to show how many accounts the panel has" }
+  ],
+  "events": ["user.created", "panel.addon_removed"],
+  "webhook": "/nexora/events",
+  "setup": "/nexora/setup",
+  "health": "/health",
+  "ui": "/"
+}
