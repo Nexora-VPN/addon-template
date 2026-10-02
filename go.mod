@@ -1,7 +1,7 @@
 module github.com/nexora-vpn/addon-template
 
-go 1.25.0
+go 1.27.1
 
-require github.com/nexora-vpn/addon-kit v0.1.0
+require github.com/nexora-vpn/addon-kit v0.1.1
 
-require golang.org/x/mod v0.38.0 // indirect
+require golang.org/x/mod v0.41.0 // indirect
