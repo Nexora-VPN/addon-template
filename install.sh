@@ -99,6 +99,7 @@ setenv() {
 	grep -v "^$1=" "${DIR}/.env" >"${DIR}/.env.tmp" || true
 	printf '%s=%s\n' "$1" "$2" >>"${DIR}/.env.tmp"
 	mv "${DIR}/.env.tmp" "${DIR}/.env"
+	chmod 600 "${DIR}/.env" # the mv carries the temporary file's mode, not the 600 above
 }
 
 printf '%s' "$OPTS" | while IFS= read -r kv; do
