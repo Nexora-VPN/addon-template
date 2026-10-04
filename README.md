@@ -12,7 +12,7 @@ nothing of its own yet. Built on
 | [`main.go`](main.go) | The program: about a hundred lines on top of the kit |
 | [`install.sh`](install.sh) | Install, update or remove on a Linux host — `--method script` (binary + systemd) or `--method docker` (compose) — by hand or by the panel over SSH |
 | [`deploy/compose.yml`](deploy/compose.yml) | The compose stack the docker method runs |
-| [`.github/workflows/release.yml`](.github/workflows/release.yml) | On a `v*` tag: binaries, checksums, the release and the image `ghcr.io/nexora-vpn/addon-template` |
+| [`.github/workflows/release.yml`](.github/workflows/release.yml) | On a `v*` tag: binaries, checksums, the release and the image `ghcr.io/nexora-vpn/addon-template`. Then sign the checksums with the manifest's key — `nexora-addon sign-sums -key addon.key SHA256SUMS > SHA256SUMS.sig` — and `gh release upload <tag> SHA256SUMS.sig`: the panel installs a release over SSH only when its `install.sh` and binary match them |
 
 ## Run it
 
