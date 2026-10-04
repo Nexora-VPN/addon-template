@@ -92,12 +92,29 @@ mkdir -p "${DIR}/data"
 chmod 700 "${DIR}"
 echo "$METHOD" >"${DIR}/.method"
 
+# envquote VALUE: the value as both readers of the .env take it literally —
+# systemd's EnvironmentFile and docker compose's env_file. Single quotes are
+# literal to both; a value holding one goes in double quotes, with \ and "
+# escaped, and for compose, which expands $ inside them, $ doubled.
+envquote() {
+	case "$1" in
+	*\'*) ;;
+	*)
+		printf "'%s'" "$1"
+		return
+		;;
+	esac
+	v="$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
+	[ "$METHOD" != docker ] || v="$(printf '%s' "$v" | sed 's/\$/$$/g')"
+	printf '"%s"' "$v"
+}
+
 # setenv KEY VALUE: replace or add one line of the .env file.
 setenv() {
 	touch "${DIR}/.env"
 	chmod 600 "${DIR}/.env"
 	grep -v "^$1=" "${DIR}/.env" >"${DIR}/.env.tmp" || true
-	printf '%s=%s\n' "$1" "$2" >>"${DIR}/.env.tmp"
+	printf '%s=%s\n' "$1" "$(envquote "$2")" >>"${DIR}/.env.tmp"
 	mv "${DIR}/.env.tmp" "${DIR}/.env"
 	chmod 600 "${DIR}/.env" # the mv carries the temporary file's mode, not the 600 above
 }
